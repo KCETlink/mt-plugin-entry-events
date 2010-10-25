@@ -9,6 +9,7 @@
 # version 2 for more details. You should have received a copy of the GNU
 # General Public License version 2 along with this program. If not, see
 # <http://www.gnu.org/licenses/>.
+
 package EntryEvent::Tags;
 
 use strict;
@@ -63,7 +64,6 @@ sub build_event_template {
 
     return $res;
 }
-
 
 sub all_events_container { # a container to return all events in a given time period
     my ($ctx, $args, $cond) = @_;
@@ -363,6 +363,5 @@ sub event_is_featured {
     my $event = $ctx->stash('event') or return $ctx->error('There was no event found in context.');
     return $event->featured || 0;
 }
-
 
 1;

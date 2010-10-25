@@ -1,11 +1,11 @@
 id: EntryEvents
-name: EntryEvents
+name: Entry Events
 key: entryevents
-description: Allows entries to have event metadata associated with them
-version: 0.1
+description: Allows entries to have event metadata associated with them.
+version: 0.2
 schema_version: 0.35
-author_name: Six Apart Ltd.
-author_link: http://www.sixapart.com
+author_name: Six Apart
+author_link: http://www.movabletype.org/
 
 settings:
     show_events:

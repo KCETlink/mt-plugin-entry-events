@@ -9,6 +9,7 @@
 # version 2 for more details. You should have received a copy of the GNU
 # General Public License version 2 along with this program. If not, see
 # <http://www.gnu.org/licenses/>.
+
 package EntryEvent::EntryEvent;
 use strict;
 use warnings;
@@ -44,12 +45,14 @@ __PACKAGE__->install_meta({
     columns => [ 'ical' ]
 });
 
-sub recurrence { # format this event's recurrence params in DateTime::Event::ICal format
+# format this event's recurrence params in DateTime::Event::ICal format
+sub recurrence {
     my $event = shift;
     my $ical = $event->ical;
-    return unless ($ical); # return undef if this has no ical param
+    # return undef if this has no ical param
+    return unless ($ical);
 
-    # convert these time params to datetime objects.. unless they already are
+    # convert these time params to datetime objects... unless they already are
     $ical->{dtstart} = ts2datetime($ical->{dtstart}) unless (ref $ical->{dtstart} eq 'DateTime');
     if ($ical->{until}) {
         $ical->{until} = ts2datetime($ical->{until}) unless (ref $ical->{until} eq 'DateTime');
@@ -58,10 +61,11 @@ sub recurrence { # format this event's recurrence params in DateTime::Event::ICa
     return $recur;
 }
 
-
-sub get_next_occurrence { # function to get the next occurence of the given event that occurs after a particular time
+# function to get the next occurence of the given event that occurs after a particular time
+sub get_next_occurrence {
     my $event = shift;
-    my ($time, $recurrence) = @_; # time is passed in YYYYMMDDHHMMSS format
+    # time is passed in YYYYMMDDHHMMSS format
+    my ($time, $recurrence) = @_;
 
     unless ($time) {
         $time = epoch2ts(undef, time);
@@ -70,14 +74,15 @@ sub get_next_occurrence { # function to get the next occurence of the given even
         return epoch2ts(undef, $recurrence->epoch);
     } else {
         $recurrence = $event->recurrence;
-        if ($recurrence) { # if this event recurs, let's return the next instance of it after $time
+        if ($recurrence) {
+            # if this event recurs, let's return the next instance of it after $time
             my $dtime = ts2datetime($time);
             return epoch2ts(undef, $recurrence->next($dtime)->epoch);
-        } else { # this does not recur, so let's just spit out the next date if it's > time
+        } else {
+            # this does not recur, so let's just spit out the next date if it's > time
             return ($event->event_date > $time)?$event->event_date:undef;
         }
     }
 }
-
 
 1;

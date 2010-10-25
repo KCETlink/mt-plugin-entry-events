@@ -9,6 +9,7 @@
 # version 2 for more details. You should have received a copy of the GNU
 # General Public License version 2 along with this program. If not, see
 # <http://www.gnu.org/licenses/>.
+
 package EntryEvent::App;
 
 use strict;
@@ -67,10 +68,8 @@ sub events {
         $ctx->stash('category', $cat);
     }
 
-
     my $page = $tmpl->build($ctx);
     return $page || '';
 }
-
 
 1;

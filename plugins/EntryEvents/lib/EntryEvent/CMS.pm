@@ -9,6 +9,7 @@
 # version 2 for more details. You should have received a copy of the GNU
 # General Public License version 2 along with this program. If not, see
 # <http://www.gnu.org/licenses/>.
+
 package EntryEvent::CMS;
 
 use strict;
@@ -17,7 +18,6 @@ use warnings;
 use MT;
 use MT::Util qw( format_ts );
 require EntryEvent::EntryEvent;
-
 
 sub source_edit_entry {
     my ($cb, $app, $tmpl) = @_;
@@ -162,7 +162,6 @@ sub post_remove_entry {
     my ($cb, $entry) = @_;
     my $remove = EntryEvent::EntryEvent->remove({ entry_id => $entry->id });
 }
-
 
 sub get_ical_params {
     my $app = shift;
