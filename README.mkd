@@ -53,11 +53,11 @@ An ``<mt:FeaturedEvents>`` tag will load all (or up to limit=n) events marked "f
 * featured -- set this to 1 and we will load featured events in the specific category.
 
 ``<mt:EntryEvents>`` -- this is a container tag which will retrieve a list of the occurrences of the event associated with the current entry in context. Useful for retrieving the future dates of a recurring event. Optional parameters are:
-    
+
 * start -- the timestamp to start events from, in YYYYMMDDHHMMSS format. If this is not passed, all recurrences of this event will be listed, including those in the past.
 * days -- the number of days' worth of events data to load.
 * end -- the timestamp to grab events until, in YYYYMMDDHHMMSS format. If specified, will override the days argument.
-    
+
 
 ### Function Tags
 
@@ -72,12 +72,12 @@ An ``<mt:FeaturedEvents>`` tag will load all (or up to limit=n) events marked "f
 
 An example template using the above tags to display 7 days' worth of events and their details:
 
-	This week's upcoming events:<br />
-	<ul>
-	<mt:Events days="7">
-		<li><mt:EntryTitle> -- on <mt:EventDate></li>
-	</mt:Events>
-	</ul>
+    This week's upcoming events:<br />
+    <ul>
+    <mt:Events days="7">
+        <li><mt:EntryTitle> -- on <mt:EventDate></li>
+    </mt:Events>
+    </ul>
 
 
 ### Technical Stuff

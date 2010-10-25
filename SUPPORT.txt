@@ -1,2 +1,2 @@
-EntryEvents is not an official Six Apart release. As such, support from Six
-Apart for this plugin is not available.
+EntryEvents is not an official Six Apart release. As such, support for this
+plugin is not available.
