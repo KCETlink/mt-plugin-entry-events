@@ -13,13 +13,21 @@ settings:
         default: 0
 
 object_types:
-    entry_event: EntryEvent::EntryEvent
+    entryevent: EntryEvent::EntryEvent
+
+backup_instructions:
+    entryevent:
+        order: 550
 
 callbacks:
     MT::App::CMS::template_source.edit_entry: $EntryEvent::EntryEvent::CMS::source_edit_entry
     MT::App::CMS::template_param.edit_entry: $EntryEvent::EntryEvent::CMS::param_edit_entry
     cms_post_save.entry: $EntryEvent::EntryEvent::CMS::post_save_entry
-    MT::Entry::post_remove: $EntryEvent::EntryEvent::CMS::post_remove_entry
+
+applications:
+    new_search:
+        callbacks:
+            init_request: $EntryEvent::EntryEvent::Search::init_request
 
 tags:
     block:

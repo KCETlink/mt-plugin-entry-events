@@ -37,7 +37,7 @@ __PACKAGE__->install_properties({
     },
     datasource => 'entryevent',
     primary_key => 'id',
-    child_of    => 'MT::Entry',
+    child_of    => ['MT::Entry', 'MT::Blog'],
     meta => 1,
 });
 
@@ -77,12 +77,21 @@ sub get_next_occurrence {
         if ($recurrence) {
             # if this event recurs, let's return the next instance of it after $time
             my $dtime = ts2datetime($time);
-            return epoch2ts(undef, $recurrence->next($dtime)->epoch);
+            my $next_recurrence = $recurrence->next($dtime);
+            return ( $next_recurrence ? (epoch2ts(undef, $next_recurrence->epoch)) : undef );
         } else {
             # this does not recur, so let's just spit out the next date if it's > time
             return ($event->event_date > $time)?$event->event_date:undef;
         }
     }
+}
+
+sub parents {
+    my $obj = shift;
+    {
+        blog_id  => MT->model('blog'),
+        entry_id => MT->model('entry'),
+    };
 }
 
 1;

@@ -8,8 +8,11 @@
 
 ## Requirements
 
-This plugin requires the Perl `DateTime` module as well as
-`DateTime::Event::Ical`.
+This plugin requires the following perl modules:
+
+* `DateTime`
+* `DateTime::Event::Ical`
+* `Date::Parse`
 
 
 ## Usage
@@ -62,32 +65,41 @@ from the selected event start.
 
 ### Container Tags
 
-`<mt:Events />` -- This is a container tag that will retrieve all events for the blog in context. Optional parameters are:
+**&lt;mt:Events /&gt;** -- This is a container tag that will retrieve all events for the blog in context. Optional parameters are:
 
 * start -- The timestamp to start events from, in YYYYMMDDHHMMSS format.
   Defaults to today.
 * days -- The number of days' worth of events data to load. Defaults to 7.
 * end -- The timestamp to grab events until, in YYYYMMDDHHMMSS format. If
   specified, will override the days argument.
+* no\_end -- Set this to '1' to retrieve all events after start date.  Specifying 'days'
+or 'end' will override the 'no\_end' argument.
+* limit -- The maximum number of events to load and display.
 
 An `<mt:Events>` tag with no parameters will default to displaying 7 days worth
 of events, starting with the time the template is published. This tag returns
 the entry objects associated with the events as well, so that one can retrieve
 the entry's title, description, tags, etc. in this context.
 
-`<mt:FeaturedEvents />` -- This is a container tag that will retrieve all
+<br />
+**&lt;mt:FeaturedEvents /&gt;** -- This is a container tag that will retrieve all
 featured events for the blog in context. Optional parameters are:
 
 * start -- The timestamp to start events from, in YYYYMMDDHHMMSS format.
-  Defaults to today.
-* limit -- The number of dates to load. If this is specified, it will override
-  the days parameter & only display limit number of dates, even if that is
-  fewer than the number of days specified.
+Defaults to the current date and time in the timezone set for the current blog in context.
+* days -- The number of days' worth of events data to load. Defaults to 7 unless
+'no_end' argument is specified.
+* end -- The timestamp to grab events until, in YYYYMMDDHHMMSS format. If
+specified, will override the 'days' argument.
+* no\_end -- Set this to '1' to retrieve all events after start date.  Specifying 'days'
+or 'end' will override the 'no\_end' argument.
+* limit -- The maximum number of events to load and display.
 
 An `<mt:FeaturedEvents>` tag will load all (or up to limit=n) events marked
 "featured" starting on the date specified.
 
-`<mt:CategoryEvents />` -- This is a container tag that will retrieve all
+<br />
+**&lt;mt:CategoryEvents /&gt;** -- This is a container tag that will retrieve all
 events for the category in context. Optional parameters are:
 
 * start -- The timestamp to start events from, in YYYYMMDDHHMMSS format.
@@ -95,38 +107,62 @@ events for the category in context. Optional parameters are:
 * days -- The number of days' worth of events data to load. Defaults to 7.
 * end -- The timestamp to grab events until, in YYYYMMDDHHMMSS format. If
   specified, will override the days argument.
+* no\_end -- Set this to '1' to retrieve all events after start date.  Specifying 'days'
+or 'end' will override the 'no\_end' argument.
+* limit -- The maximum number of events to load and display.
+* blog\_id -- Blog ID of blog to retrieve events from. Defaults to blog ID of blog in
+context.
+* category -- Name of category to retrieve entry events for.  Defaults to category in
+context. Error occurs if no 'category' argument is provided and no category is in
+context.
 * featured -- Set this to 1 and it will load featured events in the specific
   category.
 
-`<mt:EntryEvents>` -- This is a container tag which will retrieve a list of the
+<br />
+**&lt;mt:EntryEvents&gt;** -- This is a container tag which will retrieve a list of the
 occurrences of the event associated with the current entry in context. Useful
 for retrieving the future dates of a recurring event. Optional parameters are:
 
 * start -- The timestamp to start events from, in YYYYMMDDHHMMSS format. If
   this is not passed, all recurrences of this event will be listed, including
   those in the past.
-* days -- The number of days' worth of events data to load.
+* days -- _Currently not supported._ The number of days' worth of events data to load.
 * end -- The timestamp to grab events until, in YYYYMMDDHHMMSS format. If
   specified, will override the days argument.
+* limit -- The maximum number of events to load and display.
 
+<br />
+**Template Loop Meta Variables**
 
+* **new_day** -- When a new event date is encountered (the event date of the previous 
+event is different from the event date of the current event), each of the above container 
+tags sets the Movable Type variable `'new_day'` to a value of '1'.
+
+* All of the above container tags support the standard 
+[template loop meta variables](http://www.movabletype.org/documentation/designer/loop-meta-variables.html)  
+(`__first__`, `__last__`, `__odd__`, `__even__`, `__counter__`).
+
+<br />
 ### Function Tags
 
-`<mt:EventDate>` -- Will return the date of the current instance of the event
-in context. If this is an event that only occurs once, it will return just that
-date. However, if it's a recurring event it will return the date of the
-recurrence in context (this tag will only work within one of the Events
-container tags). This takes a `format_ts` parameter that can be structured per
-the Movable Type Date Formats documentation.
+**&lt;mt:EventDate&gt;** -- Returns the date of the current instance of the event in context. If this is an event that only occurs once, it will return just that date. However, if it's a recurring event it will return the date of the recurrence in context (this tag will only work within one of the Events container tags).
 
+The `<mt:EventDate>` tag recognizes a `format` attribute which may be used to control the format of the date displayed. The `format` attribute uses standard Movable Type date format specifiers per the
+[Movable Type Date Formats documentation](http://www.movabletype.org/documentation/appendices/date-formats.html).
 
+If no `format` attribute is specified a default format of `"%A, %B %e at %l:%M %p"` is used.
+
+<br />
 ### Conditional Tags
 
-`<mt:IfEventHasRecurrence>` -- A conditional tag which returns true if the
+**&lt;mt:IfEventHasRecurrence&gt;** -- A conditional tag which returns true if the
 event is recurring, false if it is a one-off event.
-`<mt:IfEventFeatured>` -- A conditional tag which returns true if the event is
+
+<br />
+**&lt;mt:IfEventFeatured&gt;** -- A conditional tag which returns true if the event is
 marked as "featured"
 
+<br /><br />
 An example template using the above tags to display 7 days' worth of events and their details:
 
     This week's upcoming events:<br />
@@ -136,7 +172,7 @@ An example template using the above tags to display 7 days' worth of events and 
     </mt:Events>
     </ul>
 
-
+<br />
 ### Technical Stuff
 
 Each event lives in a separate `mt_entryevent` table tied to the entries via an
@@ -145,3 +181,88 @@ relationship with an entry which means that future recurrences of an event will
 end up having the same comments. If you end up wanting events that have
 different comments from occurrence to occurrence, I would recommend creating
 new entries for each one.
+
+<br />
+## mt-search Integration
+
+### 'entry_events' query parameter
+
+The EntryEvents plugin provides integration with mt-search and search provided
+by the FieldDay plugin via an 'entry_events' query parameter / form field.  The
+'entry_events' query paramter / form field may be used to filter (limit) search
+results to entries having an entry event date or an entry event recurrence date
+within a specified time period.
+
+Format of 'entry_events' value:
+`"start:YYYYMMDDHHMMSS,end:YYYYMMDDHHMMSS,days:nn"`
+
+All parameters (start, end, days) are optional, must be separated by a comma, 
+and may be present in any order.  Parameter name must be separated from 
+parameter value by a colon (":").
+
+* **start:**  
+    Beginning of time period to look for entry events and event recurrences 
+    occurring on or after.  Entry with event or event recurrence occurring 
+    exactly at start time *will* be returned in search results.
+    
+    Format: `YYYYMMDDHHMMSS`
+    
+    Default value: Current date/time using timezone from first blog being searched.
+
+
+* **end:**  
+    End of time period to look for entry events and event recurrences.  Entry 
+    with event or event recurrence occurring exactly at end time *will not* be 
+    returned in search results.
+    
+    Format: `YYYYMMDDHHMMSS`
+    
+    Default value: (none)
+    
+    If both 'end' and 'days' are specified, 'days' overrides 'end'.
+ 
+
+* **days:**  
+    Number of days to search for events and event recurrences after 'start' 
+    date/time.
+    
+    Default value: 7 if neither 'days' nor 'end' are specified.
+
+#### Examples:
+
+1. `<input type="hidden" name="entry_events" value="start:20111004000000,days:1" />`  
+    Result: Filter search results to entries with events or event recurrences
+    occurring on or after 2011-10-04 12:00:00am and up to 1 day after (up to, 
+    but not including, 2011-10-05 12:00:00am).
+ 
+
+2. `<input type="hidden" name="entry_events" value="start:20111004000000,end:20111005000000" />`  
+    Result: Same as previous example - filter search results to entries with
+    events or event recurrences on or after 2011-10-04 12:00:00am and up to,
+    but not including, 2011-10-05 12:00:00am.
+ 
+
+3. `<input type="hidden" name="entry_events" value="start:20111004000000" />`  
+    Result: No 'days' and no 'end' parameters, so default 'days' value of '7'
+    is used.  Filter search results to entries with events or event recurrences
+    occurring on or after 2011-10-04 12:00:00am and up to, but not including,
+    2011-10-11 12:00:00am.
+
+
+### Sorting of search results by entry event date ('SortByEntryEvent')
+
+If search results have been filtered using the 'entry_events' query parameter /
+form field described above, search results may be sorted by the next entry event
+recurrence date (the next event recurrence date for an entry occurring on or 
+after the 'start' date, but before the 'end' date).  To sort search results by
+the next entry event recurrence date, include a `SortByEntryEvent` query
+parameter / form field, set to a value of '1'.
+
+When `SortByEntryEvent` is enabled, sorting by next entry event recurrence
+date takes priority over any normal / default sort fields specified by a 
+SearchSortBy query parameter / form field / configuration directive, and the
+normal / default sort fields become secondary sort fields used to order search
+results when two entries have the same event date.
+
+Direction of sorting when `SortByEntryEvent` is enabled follows the setting of
+the SearchResultDisplay query parameter / form field / configuration directive.

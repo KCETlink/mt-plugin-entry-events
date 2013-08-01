@@ -138,7 +138,7 @@ sub post_save_entry {
         $saved_time->event_date($ts);
         $saved_time->featured($featured);
         if ($has_recurrence) {
-            $saved_time->ical(get_ical_params($app, $ts));
+            $saved_time->ical(get_ical_params($app, $entry, $ts));
         } else {
             $saved_time->ical(undef); # blank this out if it's not set
         }
@@ -151,27 +151,47 @@ sub post_save_entry {
         $saved_time->featured($featured);
 
         if ($has_recurrence) {
-            $saved_time->ical(get_ical_params($app, $ts));
+            $saved_time->ical(get_ical_params($app, $entry, $ts));
         }
         $saved_time->save;
     }
 
 }
 
-sub post_remove_entry {
-    my ($cb, $entry) = @_;
-    my $remove = EntryEvent::EntryEvent->remove({ entry_id => $entry->id });
-}
-
 sub get_ical_params {
     my $app = shift;
-    my ($ts) = @_;
+    my ($entry, $ts) = @_;
     my %params;
+
     my $end_recurrence = $app->param('recurrence_end');
+    $end_recurrence .= ' 23:59:59';  # set the end time to be the end of this day
 
-    my ($month, $day, $year) = split('/', $end_recurrence);
+    require Date::Parse;
+    my @end_recur = Date::Parse::strptime($end_recurrence);
 
-    $end_recurrence = join('', $year, $month, $day, '235959'); # set the end time to be the end of this day
+    if (!@end_recur) {
+        my $class_label = $entry->class_label;
+        my $entry_title = $entry->title;
+        my $entry_id    = $entry->id;
+
+        my $message = "EntryEvents: $class_label '$entry_title' (ID:$entry_id): ";
+        $message   .= "Invalid or unrecognized date in 'Until' parameter.";
+
+        require MT::Log;
+        $app->log(
+            {
+                message => $message,
+                class => system,
+                level => MT::Log::ERROR(),
+                category => 'callback',
+            }
+        );
+
+        return undef;
+    }
+
+    $end_recurrence = sprintf '%04d%02d%02d%02d%02d%02d',
+        $end_recur[5] + 1900, $end_recur[4] + 1, @end_recur[ 3, 2, 1, 0 ];
 
     $params{dtstart} = $ts;
     $params{until} = $end_recurrence;

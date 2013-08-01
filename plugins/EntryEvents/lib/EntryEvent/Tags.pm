@@ -36,6 +36,7 @@ sub build_event_template {
         my $event = $entry_event->{event};
         my $event_date = epoch2ts(undef, $entry_event->epoch);
         my $entry = MT::Entry->load($event->entry_id);
+        next if $entry->status != MT::Entry::RELEASE();
         local $ctx->{__stash}{blog} = $entry->blog;
         local $ctx->{__stash}{blog_id} = $entry->blog_id;
         local $ctx->{__stash}{entry} = $entry;
@@ -206,23 +207,46 @@ sub featured_container { # just find featured events
     my $blog = $ctx->stash('blog');
 
     my $limit = $args->{limit};
-    my $start = $args->{start} || epoch2ts(undef, time);
+    my $start = $args->{start} || epoch2ts($blog, time);
+    my $end   = $args->{end};
 
-    if ($start) {
-        # start is passed as YYYYMMDDHHMMSS so parse that to a DateTime obj
-        $start = ts2datetime($start);
+    # start & end are passed as YYYYMMDDHHMMSS so parse them to a DateTime obj
+    $start = ts2datetime($start);
+    if ($end) {
+        $end = ts2datetime($end);
+    } else {
+        if ($args->{days}) {
+            $end = $start->clone;
+            my $days = $args->{days};
+            $end->add( days => $days );
+        } elsif (!$args->{no_end}) { # we can explicitly pass in a "no_end" var here to NOT limit things, else..
+            # if $end isn't passed and $days isn't set, we want to limit to 7 days by default
+            $end = $start->clone;
+            $end->add( days => 7 );
+        }
     }
 
+    # Make sure $start is included in recurrence check
+    #   (but note that $end is *not* included)
+    $start->subtract( seconds => 1 );
 
-    my $check_set = DateTime::Span->from_datetimes( start => $start );
-
+    # Check for events that fall within the range given
+    my $check_set = DateTime::Span->from_datetimes( after => $start, ($end)?( before => $end ):());
 
     my $tag = lc $ctx->stash('tag');
 
     my @events;
-    my @load_events = EntryEvent::EntryEvent->load({ featured => 1 }, { limit => $limit }) or return '';
+    my $event_iter = EntryEvent::EntryEvent->load_iter(
+                          { blog_id => $blog->id, featured => 1 },
+                          { join => MT::Entry->join_on( undef,
+                                    { id => \'= entryevent_entry_id',
+                                      status => MT::Entry::RELEASE() },
+                                    { unique => 1 },
+                                 ),
+                           }
+                      ) or return '';
 
-    for my $event (@load_events) {
+    while ( my $event = $event_iter->() ) {
         if (my $ical = $event->ical) {
             # doing some datetime intersection stuff with our start and end dates to find out whether our event
             # falls within the provided dates (or just one date)
@@ -231,13 +255,16 @@ sub featured_container { # just find featured events
 
             my $event_recur = DateTime::Event::ICal->recur(%$ical);
             my $event_next = $event_recur->next($start); # just get the next recurrence of this event after $start
-            $event_next->{event} = $event;
-            push @events, $event_next;
-
+            if ( $event_next && $check_set->contains($event_next) ) {
+                $event_next->{event} = $event;
+                push @events, $event_next;
+            }
         } else {
             my $dt = ts2datetime($event->event_date);
-            $dt->{event} = $event;
-            push @events, $dt;
+            if ($check_set->contains($dt)) {
+                $dt->{event} = $event;
+                push @events, $dt;
+            }
         }
     }
     @events = sort { $a->{event}->get_next_occurrence(epoch2ts(undef, $start->epoch), $a) <=> $b->{event}->get_next_occurrence(epoch2ts(undef, $start->epoch), $b) } @events;
